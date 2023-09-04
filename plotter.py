@@ -1,0 +1,194 @@
+"""
+Este script contiene ejemplos de como usar la base de datos
+de Cuenta Pública creada en converter.py
+"""
+
+import pandas as pd
+import plotly.graph_objects as go
+
+
+def main():
+    """
+    Esta función compara cifras anuales de distintos ramos / programas.
+    """
+
+    # Cargamos el dataset que contiene la información de todoslos archivos XLS.
+    df = pd.read_csv("./data.csv")
+
+    # Seleccioamos los registros del año 2019 al 2022.
+    df = df[df["CICLO"].between(2019, 2022)]
+
+    # Seleccionamos las cifras de presupuesto ejercido.
+    df = df[df["PRESUPUESTO"] == "Ejercicio"]
+
+    # Seleccionamos las cifras del ramo: INAI.
+    inai = df[df["RAMO"] == "Instituto Nacional de Transparencia, Acceso a la Información y Protección de Datos Personales"].groupby("CICLO").sum()[
+        "TOTAL"] / 1000000
+
+    # Seleccionamos las cifras del ramo: INE.
+    ine = df[df["RAMO"] == "Instituto Nacional Electoral"].groupby("CICLO").sum()[
+        "TOTAL"] / 1000000
+
+    # Seleccionamos las cifras del programa: Jóvenes Cosnstruyendo el Futuro.
+    jovenes = df[df["DESCRIPCIÓN"] == "Jóvenes Construyendo el Futuro"].groupby("CICLO").sum()[
+        "TOTAL"] / 1000000
+
+    # Vamos a crear 3 gráficas de barras verticales para
+    # comparar los valores anuales de cada categoría.
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Bar(
+            x=inai.index,
+            y=inai.values,
+            text=inai.values,
+            texttemplate="%{text:,.0f}",
+            textfont_color="#FFFFFF",
+            textfont_family="Oswald",
+            textfont_size=26,
+            textposition="outside",
+            name="Instituto Nacional de Acceso a la Información",
+            marker_color="#5D69B1",
+            opacity=1.0,
+            marker_line_width=0,
+        )
+    )
+
+    fig.add_trace(
+        go.Bar(
+            x=ine.index,
+            y=ine.values,
+            text=ine.values,
+            texttemplate="%{text:,.0f}",
+            textfont_color="#FFFFFF",
+            textfont_family="Oswald",
+            textfont_size=26,
+            textposition="outside",
+            name="Instituto Nacional Electoral",
+            marker_color="#52BCA3",
+            opacity=1.0,
+            marker_line_width=0,
+        )
+    )
+
+    fig.add_trace(
+        go.Bar(
+            x=jovenes.index,
+            y=jovenes.values,
+            text=jovenes.values,
+            texttemplate="%{text:,.0f}",
+            textfont_color="#FFFFFF",
+            textfont_family="Oswald",
+            textfont_size=26,
+            textposition="outside",
+            name="Jóvenes Construyendo el Futuro",
+            marker_color="#E58606",
+            opacity=1.0,
+            marker_line_width=0,
+        )
+    )
+
+    fig.update_xaxes(
+        tickformat="%m<br>'%y",
+        ticks="outside",
+        tickfont_size=14,
+        ticklen=10,
+        zeroline=False,
+        tickcolor="#FFFFFF",
+        linewidth=2,
+        showline=True,
+        gridwidth=0.6,
+        mirror=True,
+    )
+
+    fig.update_yaxes(
+        range=[0, 33000],
+        title="Millones de pesos (nominales)",
+        tickfont_size=16,
+        separatethousands=True,
+        ticks="outside",
+        ticklen=10,
+        title_standoff=6,
+        tickcolor="#FFFFFF",
+        linewidth=2,
+        showgrid=True,
+        gridwidth=0.6,
+        showline=True,
+        mirror=True,
+        nticks=14,
+    )
+
+    fig.update_layout(
+        legend_itemsizing="constant",
+        legend_font_size=14,
+        showlegend=True,
+        legend_x=0.98,
+        legend_y=0.98,
+        legend_xanchor="right",
+        legend_yanchor="top",
+        width=1280,
+        height=720,
+        font_family="Lato",
+        font_color="#FFFFFF",
+        font_size=18,
+        title_text="Comparación del presupuesto anual ejercido del INAI, INE y Jóvenes Construyendo el Futuro (2019-2022)",
+        title_x=0.5,
+        title_y=0.97,
+        margin_t=60,
+        margin_l=110,
+        margin_r=40,
+        margin_b=80,
+        title_font_size=22,
+        plot_bgcolor="#111111",
+        paper_bgcolor="#282A3A",
+        annotations=[
+            dict(
+                x=0.5,
+                y=0.92,
+                xref="paper",
+                yref="paper",
+                xanchor="center",
+                yanchor="top",
+                bordercolor="#FFFFFF",
+                borderwidth=1.5,
+                borderpad=6,
+                font_size=14,
+                bgcolor="#111111",
+                text=f"<b>Nota:</b> Incluye gastos corrientes y de inversión."
+            ),
+            dict(
+                x=0.01,
+                y=-0.12,
+                xref="paper",
+                yref="paper",
+                xanchor="left",
+                yanchor="top",
+                text="Fuente: SHCP (Cuenta Pública 2013-2022)"
+            ),
+            dict(
+                x=0.5,
+                y=-0.12,
+                xref="paper",
+                yref="paper",
+                xanchor="center",
+                yanchor="top",
+                text="Año fiscal"
+            ),
+            dict(
+                x=1.01,
+                y=-0.12,
+                xref="paper",
+                yref="paper",
+                xanchor="right",
+                yanchor="top",
+                text="🧁 @lapanquecita"
+            ),
+        ]
+    )
+
+    fig.write_image("./comparacion_anual.png")
+
+
+if __name__ == "__main__":
+
+    main()
