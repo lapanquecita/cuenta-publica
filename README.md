@@ -63,7 +63,7 @@ En el archivo `data.csv` hay algunas columnas con sufijo, este puede ser `GC` (G
 
 Algunos ramos fueron renombrados a su nombre actual, como es el caso de Desarrollo Social el cual ahora se llama Bienestar.
 
-LAs cifras no estána ajustadas por la inflación, para realizar esto hay instrucciones en la siguiente sección.
+Las cifras no están ajustadas por la inflación, para realizar esto hay instrucciones en la siguiente sección.
 
 Existe otro conjunto de bases de datos de Cuenta Pública (https://www.transparenciapresupuestaria.gob.mx/Datos-Abiertos), sin embargo, encontré varias inconsistencias al calcular los totales. También había un par de archivos con filas mucho más largas que las demás. Por lo tanto opté no usarlos para este repositorio.
 
@@ -86,13 +86,13 @@ El siguiente código muestra como ajustar los totales de presupuesto `Aprobado` 
 ipc = pd.read_csv("./IPC.csv", parse_dates=["Fecha"], index_col="Fecha")
 
 # Determinamos el IPC base, el cual sería el más reciente disponible.
-ultimo_ipc = ipc["IPC"][-1]
+ipc_referencia = ipc["IPC"][-1]
 
 # Vamos a seleccionar el IPC de diciembre de cada año.
 ipc = ipc.resample("Y").last()
 
-# Calcualmos el factor con una simple división.
-ipc["FACTOR"] = ultimo_ipc / ipc["IPC"]
+# Calculamos el factor con una simple división.
+ipc["FACTOR"] = ipc_referencia / ipc["IPC"]
 
 # Cambiamos el índice del DataFrame para que sea un integral en lugar de una fecha.
 # Esto es para que coincida con el índice del DataFrame de Cuenta Pública.
