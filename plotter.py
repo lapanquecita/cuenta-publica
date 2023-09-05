@@ -189,6 +189,475 @@ def main():
     fig.write_image("./comparacion_anual.png")
 
 
+def main2():
+
+    graficar_programa(
+        "vacuna",
+        "Programa de Vacunación",
+        "#5D69B1",
+        "#E58606",
+        "left",
+        1
+    )
+
+    graficar_programa(
+        "vigilancia epidemiológica",
+        "Programa de Vigilancia Epidemiológica",
+        "#ED645A",
+        "#2F8AC4",
+        "right",
+        2
+    )
+
+    graficar_ramo(
+        "Bienestar",
+        "Secretaría del Bienestar (Desarrollo Social)",
+        "#DAA51B",
+        "#24796C",
+        "left",
+        3
+    )
+
+    graficar_ramo(
+        "Consejo Nacional de Ciencia y Tecnología",
+        "CONACyT",
+        "#764E9F",
+        "#52BCA3",
+        "right",
+        4
+    )
+
+    graficar_ramo(
+        "Trabajo y Previsión Social",
+        "Secretaría del Trabajo y Previsión Social",
+        "#3949ab",
+        "#ff3d00",
+        "left",
+        5
+    )
+
+    graficar_ramo(
+        "Turismo",
+        "Secretaría del Turismo",
+        "#ffa000",
+        "#689f38",
+        "left",
+        6
+    )
+
+
+def graficar_programa(nombre, titulo, color1, color2, pos, archivo):
+    """
+    Esta función crea gráficas de barras con el nombre del programa especificado.
+    Las cifras se ajustan por inflación usando el Índice de Precios al Consumidor.
+    """
+
+    # Cargamos el dataset de IPC.
+    ipc = pd.read_csv("./IPC.csv", parse_dates=["Fecha"], index_col="Fecha")
+
+    # Este IPC será nuestro valor de referencia.
+    # El valor puede cambiar con el tiempo.
+    ultimo_ipc = ipc["IPC"][-1]
+
+    # Si queremos usar el IPC de enero usamos first()
+    # Si queremos usar el IPC de diciembre usamos last()
+    ipc = ipc.resample("Y").last()
+
+    # CAlculamos el factor.
+    ipc["FACTOR"] = ultimo_ipc / ipc["IPC"]
+
+    # Solo necesitamos el año del IPC.
+    ipc.index = ipc.index.year
+
+    # Cargamos el dataset de Cuenta Pública.
+    df = pd.read_csv("./data.csv")
+
+    # Filtramos nuestro DataFrame con el programa especificado.
+    final = df[df["DESCRIPCIÓN"].str.contains(nombre, case=False)]
+
+    final = final.pivot_table(
+        index="CICLO", columns="PRESUPUESTO", values="TOTAL", aggfunc="sum") / 1000000
+
+    # Ajustamos las cifras por la inflación.
+    final["Aprobado_Ajustado"] = final["Aprobado"] * ipc["FACTOR"]
+    final["Ejercicio_Ajustado"] = final["Ejercicio"] * ipc["FACTOR"]
+
+    # Creamos los textos para las cifras ajustadas.
+    final["Aprobado_Ajustado_Texto"] = final["Aprobado_Ajustado"].apply(
+        abreviar_cifra)
+    final["Ejercicio_Ajustado_Texto"] = final["Ejercicio_Ajustado"].apply(
+        abreviar_cifra)
+
+    # Vamos a crear una tabla con los porcentajes anuales.
+    tabla = "<b>Ejercido/Aprobado</b>"
+
+    for k, v in final.iterrows():
+        tabla += f"<br>{k}: {(v['Ejercicio_Ajustado'] / v['Aprobado_Ajustado']) * 100:,.2f}%"
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Bar(
+            x=final.index,
+            y=final["Aprobado_Ajustado"],
+            text=final["Aprobado_Ajustado_Texto"],
+            textfont_color="#FFFFFF",
+            textfont_family="Oswald",
+            textfont_size=18,
+            textposition="outside",
+            name="Aprobado",
+            marker_color=color1,
+            opacity=1.0,
+            marker_line_width=0,
+        )
+    )
+
+    fig.add_trace(
+        go.Bar(
+            x=final.index,
+            y=final["Ejercicio_Ajustado"],
+            text=final["Ejercicio_Ajustado_Texto"],
+            textfont_color="#FFFFFF",
+            textfont_family="Oswald",
+            textfont_size=18,
+            textposition="outside",
+            name="Ejercido",
+            marker_color=color2,
+            opacity=1.0,
+            marker_line_width=0,
+        )
+    )
+
+    fig.update_xaxes(
+        ticks="outside",
+        ticklen=10,
+        tickcolor="#FFFFFF",
+        linewidth=2,
+        showline=True,
+        showgrid=True,
+        gridwidth=0.35,
+        mirror=True,
+        nticks=15,
+    )
+
+    # Vamos a crer el rango para el eje vertical.
+    maximo_aprobado = final["Aprobado_Ajustado"].max()
+    maximo_ejercido = final["Ejercicio_Ajustado"].max()
+
+    nuevo_maximo = maximo_aprobado if maximo_aprobado >= maximo_ejercido else maximo_ejercido
+
+
+    fig.update_yaxes(
+        range=[0, nuevo_maximo * 1.08],
+        title="Millones de pesos a precios constantes de julio del 2023",
+        titlefont_size=20,
+        ticks="outside",
+        zeroline=False,
+        separatethousands=True,
+        ticklen=10,
+        title_standoff=6,
+        tickcolor="#FFFFFF",
+        linewidth=2,
+        showgrid=True,
+        gridwidth=0.35,
+        showline=True,
+        nticks=20,
+        mirror=True
+    )
+
+    # Acomodamos la tabla.
+    if pos == "left":
+        tabla_x = 0.02
+        tabla_xanchor = "left"
+    elif pos == "right":
+        tabla_x = 0.995
+        tabla_xanchor = "right"
+
+    fig.update_layout(
+        legend_orientation="h",
+        legend_itemsizing="constant",
+        showlegend=True,
+        legend_x=0.5,
+        legend_y=1.08,
+        legend_xanchor="center",
+        legend_yanchor="top",
+        width=1280,
+        height=720,
+        font_family="Quicksand",
+        font_color="#FFFFFF",
+        font_size=18,
+        title_text=f"Evolución del gasto total anual del <b>{titulo}</b> en México",
+        title_font_size=24,
+        title_x=0.5,
+        title_y=0.965,
+        margin_t=90,
+        margin_l=120,
+        margin_r=40,
+        margin_b=90,
+        plot_bgcolor="#111111",
+        paper_bgcolor="#282A3A",
+        annotations=[
+            dict(
+                x=tabla_x,
+                y=0.92,
+                xref="paper",
+                yref="paper",
+                xanchor=tabla_xanchor,
+                yanchor="top",
+                bordercolor="#FFFFFF",
+                borderwidth=1.5,
+                borderpad=7,
+                bgcolor="#111111",
+                align="left",
+                font_size=12,
+                text=tabla
+            ),
+            dict(
+                x=0.01,
+                y=-0.14,
+                xref="paper",
+                yref="paper",
+                xanchor="left",
+                yanchor="top",
+                text="Fuente: SHCP (Cuenta Pública 2013-2022)"
+            ),
+            dict(
+                x=0.5,
+                y=-0.14,
+                xref="paper",
+                yref="paper",
+                xanchor="center",
+                yanchor="top",
+                text="Año fiscal"
+            ),
+            dict(
+                x=1.01,
+                y=-0.14,
+                xref="paper",
+                yref="paper",
+                xanchor="right",
+                yanchor="top",
+                text="🧁 @lapanquecita"
+            )
+        ]
+    )
+
+    fig.write_image(f"./{archivo}.png")
+
+
+def graficar_ramo(nombre, titulo, color1, color2, pos, archivo):
+    """
+    Esta función crea gráficas de barras con el nombre del ramo especificado.
+    Las cifras se ajustan por inflación usando el Índice de Precios al Consumidor.
+    """
+
+    # Cargamos el dataset de IPC.
+    ipc = pd.read_csv("./IPC.csv", parse_dates=["Fecha"], index_col="Fecha")
+
+    # Este IPC será nuestro valor de referencia.
+    # El valor puede cambiar con el tiempo.
+    ultimo_ipc = ipc["IPC"][-1]
+
+    # Si queremos usar el IPC de enero usamos first()
+    # Si queremos usar el IPC de diciembre usamos last()
+    ipc = ipc.resample("Y").last()
+
+    # CAlculamos el factor.
+    ipc["FACTOR"] = ultimo_ipc / ipc["IPC"]
+
+    # Solo necesitamos el año del IPC.
+    ipc.index = ipc.index.year
+
+    # Cargamos el dataset de Cuenta Pública.
+    df = pd.read_csv("./data.csv")
+
+    # Filtramos nuestro DataFrame con el ramo especificado.
+    final = df[df["RAMO"] == nombre]
+
+    final = final.pivot_table(
+        index="CICLO", columns="PRESUPUESTO", values="TOTAL", aggfunc="sum") / 1000000
+
+    # Ajustamos las cifras por la inflación.
+    final["Aprobado_Ajustado"] = final["Aprobado"] * ipc["FACTOR"]
+    final["Ejercicio_Ajustado"] = final["Ejercicio"] * ipc["FACTOR"]
+
+    # Creamos los textos para las cifras ajustadas.
+    final["Aprobado_Ajustado_Texto"] = final["Aprobado_Ajustado"].apply(
+        abreviar_cifra)
+    final["Ejercicio_Ajustado_Texto"] = final["Ejercicio_Ajustado"].apply(
+        abreviar_cifra)
+
+    # Vamos a crear una tabla con los porcentajes anuales.
+    tabla = "<b>Ejercido/Aprobado</b>"
+
+    for k, v in final.iterrows():
+        tabla += f"<br>{k}: {(v['Ejercicio_Ajustado'] / v['Aprobado_Ajustado']) * 100:,.2f}%"
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Bar(
+            x=final.index,
+            y=final["Aprobado_Ajustado"],
+            text=final["Aprobado_Ajustado_Texto"],
+            textfont_color="#FFFFFF",
+            textfont_family="Oswald",
+            textfont_size=18,
+            textposition="outside",
+            name="Aprobado",
+            marker_color=color1,
+            opacity=1.0,
+            marker_line_width=0,
+        )
+    )
+
+    fig.add_trace(
+        go.Bar(
+            x=final.index,
+            y=final["Ejercicio_Ajustado"],
+            text=final["Ejercicio_Ajustado_Texto"],
+            textfont_color="#FFFFFF",
+            textfont_family="Oswald",
+            textfont_size=18,
+            textposition="outside",
+            name="Ejercido",
+            marker_color=color2,
+            opacity=1.0,
+            marker_line_width=0,
+        )
+    )
+
+    fig.update_xaxes(
+        ticks="outside",
+        ticklen=10,
+        tickcolor="#FFFFFF",
+        linewidth=2,
+        showline=True,
+        showgrid=True,
+        gridwidth=0.35,
+        mirror=True,
+        nticks=15,
+    )
+
+    # Vamos a crer el rango para el eje vertical.
+    maximo_aprobado = final["Aprobado_Ajustado"].max()
+    maximo_ejercido = final["Ejercicio_Ajustado"].max()
+
+    nuevo_maximo = maximo_aprobado if maximo_aprobado >= maximo_ejercido else maximo_ejercido
+
+    fig.update_yaxes(
+        range=[0, nuevo_maximo * 1.08],
+        title="Millones de pesos a precios constantes de julio del 2023",
+        titlefont_size=20,
+        ticks="outside",
+        zeroline=False,
+        separatethousands=True,
+        ticklen=10,
+        title_standoff=6,
+        tickcolor="#FFFFFF",
+        linewidth=2,
+        showgrid=True,
+        gridwidth=0.35,
+        showline=True,
+        nticks=20,
+        mirror=True
+    )
+
+    # Acomodamos la tabla.
+    if pos == "left":
+        tabla_x = 0.02
+        tabla_xanchor = "left"
+    elif pos == "right":
+        tabla_x = 0.995
+        tabla_xanchor = "right"
+
+    fig.update_layout(
+        legend_orientation="h",
+        legend_itemsizing="constant",
+        showlegend=True,
+        legend_x=0.5,
+        legend_y=1.08,
+        legend_xanchor="center",
+        legend_yanchor="top",
+        width=1280,
+        height=720,
+        font_family="Quicksand",
+        font_color="#FFFFFF",
+        font_size=18,
+        title_text=f"Evolución del gasto total anual de <b>{titulo}</b> en México",
+        title_font_size=24,
+        title_x=0.5,
+        title_y=0.965,
+        margin_t=90,
+        margin_l=120,
+        margin_r=40,
+        margin_b=90,
+        plot_bgcolor="#111111",
+        paper_bgcolor="#282A3A",
+        annotations=[
+            dict(
+                x=tabla_x,
+                y=0.92,
+                xref="paper",
+                yref="paper",
+                xanchor=tabla_xanchor,
+                yanchor="top",
+                bordercolor="#FFFFFF",
+                borderwidth=1.5,
+                borderpad=7,
+                bgcolor="#111111",
+                align="left",
+                font_size=12,
+                text=tabla
+            ),
+            dict(
+                x=0.01,
+                y=-0.14,
+                xref="paper",
+                yref="paper",
+                xanchor="left",
+                yanchor="top",
+                text="Fuente: SHCP (Cuenta Pública 2013-2022)"
+            ),
+            dict(
+                x=0.5,
+                y=-0.14,
+                xref="paper",
+                yref="paper",
+                xanchor="center",
+                yanchor="top",
+                text="Año fiscal"
+            ),
+            dict(
+                x=1.01,
+                y=-0.14,
+                xref="paper",
+                yref="paper",
+                xanchor="right",
+                yanchor="top",
+                text="🧁 @lapanquecita"
+            )
+        ]
+    )
+
+    fig.write_image(f"./{archivo}.png")
+
+
+def abreviar_cifra(x):
+    """
+    Esta función abrevia las cifras para que
+    los textos no se desborden de las barras verticales.
+    """
+
+    if x >= 100000:
+        return f"{x/1000:,.0f}k"
+    elif x >= 10000:
+        return f"{x/1000:,.1f}k"
+    else:
+        return f"{x:,.0f}"
+
+
 if __name__ == "__main__":
 
-    main()
+    # main()
+    main2()
