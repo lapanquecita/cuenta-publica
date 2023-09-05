@@ -1,8 +1,10 @@
 # Cuenta Pública
 
-En este repositorio se encuentran scripts para poder analizar los archivos de Cuenta Pública de México de los años 2013-2022.
+En este repositorio se encuentran scripts para poder analizar los archivos de la Cuenta Pública de México de los años 2013-2022.
 
 La Secretaría de Hacienda y Crédito Público (SHCP) tiene a disposición estos documentos en distintos formatos: .pdf, .doc, .xls y .csv, sin embargo no están estructurados de una forma fácil o intuitiva de analizar. El objetivo de este repositorio es proveer esta misma información de una manera eficiente.
+
+![Ejemplo Cuenta Pública](./imgs/comparacion_anual.png)
 
 Los archivos `.xls` son obtenidos del siguiente sitio web: https://www.cuentapublica.hacienda.gob.mx/
 
@@ -135,3 +137,5 @@ Al ejecutar este código nos devuelve la siguiente tabla:
 |    2022 |   299316   |    307474   |              304886 |               313197 |
 
 Ya con las cifras ajustadas se puede comparar de mejor manera la evolución del gasto.
+
+![Ejemplo ajuste inflación](./imgs/3.png)
