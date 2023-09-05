@@ -63,8 +63,82 @@ En el archivo `data.csv` hay algunas columnas con sufijo, este puede ser `GC` (G
 
 Algunos ramos fueron renombrados a su nombre actual, como es el caso de Desarrollo Social el cual ahora se llama Bienestar.
 
-LAs cifras no estána ajustadas con la inflación.
+LAs cifras no estána ajustadas por la inflación, para realizar esto hay instrucciones en la siguiente sección.
 
 Existe otro conjunto de bases de datos de Cuenta Pública (https://www.transparenciapresupuestaria.gob.mx/Datos-Abiertos), sin embargo, encontré varias inconsistencias al calcular los totales. También había un par de archivos con filas mucho más largas que las demás. Por lo tanto opté no usarlos para este repositorio.
 
 Los archivos antes mencionados están mucho más detallados, al incluir información por Entidad Federativa (en algunos casos). Los recomiendo consultar si se desea indagar más a fondo.
+
+## Ajustar las cifras por inflación
+
+Al comparar cifras históricas es importante ajustarlas al mismo poder adquisitivo o inflación, de esta manera la comparación es más justa y se reduce el riesgo de interpretaciones sesgadas.
+
+Para hacer el ajuste se utiliza el `IPC` (Índice de Precios al Consumidor), el cual se obtiene del sitio web de Banxico:
+
+https://www.banxico.org.mx/SieInternet/consultarDirectorioInternetAction.do?accion=consultarCuadro&idCuadro=CP154&locale=es
+
+En este repositorio se encuentra un archivo llamado `IPC.csv`, el cual contiene estos valores ya listos para ser usados.
+
+El siguiente código muestra como ajustar los totales de presupuesto `Aprobado` y `Ejercicio` ajustados por la inflación. Para este ejemplo utilizaremos el total de gastos de la `Secretaría del Bienestar`.
+
+```python
+# Cargamos el dataset de IPC.
+ipc = pd.read_csv("./IPC.csv", parse_dates=["Fecha"], index_col="Fecha")
+
+# Determinamos el IPC base, el cual sería el más reciente disponible.
+ultimo_ipc = ipc["IPC"][-1]
+
+# Vamos a seleccionar el IPC de diciembre de cada año.
+ipc = ipc.resample("Y").last()
+
+# Calcualmos el factor con una simple división.
+ipc["FACTOR"] = ultimo_ipc / ipc["IPC"]
+
+# Cambiamos el índice del DataFrame para que sea un integral en lugar de una fecha.
+# Esto es para que coincida con el índice del DataFrame de Cuenta Pública.
+ipc.index = ipc.index.year
+
+# Cargamos el dataset de Cuenta Pública.
+df = pd.read_csv("./data.csv")
+
+# Seleccinamos la Secretaría del Bienestar.
+df = df[df["RAMO"] == "Bienestar"]
+
+# Reorganizamos el DataFrame para que el índice sea el año (ciclo) y nuestras
+# columnas sean los presupuestos.
+df = df.pivot_table(index="CICLO", columns="PRESUPUESTO", values="TOTAL", aggfunc="sum") / 1000000
+
+# Creamos dos nuevas columnas con los valores ajustados.
+# Los cuales son el resultado de una simple multiplicación.
+# Aprovechamos que Pandas sabe como emparejar los índices.
+# De esta forma no tenemos problemas si faltan valores
+# en el DataFrame de Cuenta Pública.
+df["Aprobado_Ajustado"] = df["Aprobado"] * ipc["FACTOR"]
+df["Ejercicio_Ajustado"] = df["Ejercicio"] * ipc["FACTOR"]
+
+print(df)
+```
+
+Al ejecutar este código nos devuelve la siguiente tabla:
+
+|   CICLO |   Aprobado |   Devengado |   Ejercicio |   Modificado |   Aprobado_Ajustado |   Ejercicio_Ajustado |
+|--------:|-----------:|------------:|------------:|-------------:|--------------------:|---------------------:|
+|    2013 |    87897.7 |     85670.9 |     85670.9 |      85677.4 |              135180 |               131755 |
+|    2014 |   111211   |    106135   |    106135   |     106148   |              164328 |               156827 |
+|    2015 |   114504   |    112440   |    112440   |     112442   |              165663 |               162677 |
+|    2016 |   109372   |    106212   |    106212   |     106214   |              153094 |              
+ 148671 |
+|    2017 |   105340   |     98804.4 |     98804.4 |      98804.7 |              138096 |              
+ 129529 |
+|    2018 |   106646   |    100705   |    100705   |     100857   |              133366 |              
+ 125936 |
+|    2019 |   150606   |    147258   |    147258   |     147733   |              183160 |              
+ 179088 |
+|    2020 |   181457   |    179371   |    179371   |     179633   |              213940 |              
+ 211481 |
+|    2021 |   191725   |    209512   |    209512   |     209512   |              210560 |              
+ 230094 |
+|    2022 |   299316   |    307474   |    307474   |     307474   |              304886 |              
+ 313197 |
+
+Ya con las cifras ajustadas se puede comparar de mejor manera la evolución del gasto.
