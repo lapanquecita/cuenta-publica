@@ -2,6 +2,8 @@
 
 En este repositorio se encuentran scripts para poder analizar los archivos de la Cuenta Pública de México de los años 2013-2022.
 
+La Cuenta Pública es un documento de contabilidad donde muestra los gastos totales anuales por cada ramo del gobierno.
+
 La Secretaría de Hacienda y Crédito Público (SHCP) tiene a disposición estos documentos en distintos formatos: .pdf, .doc, .xls y .csv, sin embargo no están estructurados de una forma fácil o intuitiva de analizar. El objetivo de este repositorio es proveer esta misma información de una manera eficiente.
 
 ![Ejemplo Cuenta Pública](./imgs/comparacion_anual.png)
@@ -57,7 +59,7 @@ Lo cual nos devolverá la siguiente tabla:
 
 Efectivamente, los 4 valores coinciden sin necesidad de hacer transformaciones adicionales.
 
-El único detalle pendiente es encontrar la combianación de ramos para el total de `Ramos Generales`.
+El único detalle pendiente es encontrar la combinación de ramos para el total de `Ramos Generales`.
 
 ## Notas
 
@@ -121,7 +123,7 @@ df["Ejercicio_Ajustado"] = df["Ejercicio"] * ipc["FACTOR"]
 print(df)
 ```
 
-Al ejecutar este código nos devuelve la siguiente tabla:
+Al ejecutar este código nos devolverá una tabla muy similar a la siguiente:
 
 |   CICLO |   Aprobado |   Ejercicio |   Aprobado_Ajustado |   Ejercicio_Ajustado |
 |--------:|-----------:|------------:|--------------------:|---------------------:|
