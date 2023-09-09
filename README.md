@@ -24,6 +24,8 @@ Una vez que se extrae la información de cada archivo `.xls` se guarda en un nue
 
 Es importante mencionar que al archivo `data.csv` se le aplican varios filtros para remover datos duplicados e innecesarios que causan inconsistencias al hacer operaciones vectoriales (como sumar totales).
 
+Adicionalmente se genera el archivo `data_total.csv`, el cual solo contiene los totales de cada ramo en cada ciclo. Este archivo es recomendado para análisis más generales que no requieren conocer el desglose por programa.
+
 ## Validación de la información
 
 El principal objetivo de este proyecto es poder conocer de manera rápida y sencilla los totales de cada ente, ramo y programa. Para verificar que estos valores sean los correctos se cruzaron con los resultados de los reportes en `.pdf` que se encuentran en el mismo sitio web que los demás archivos.
