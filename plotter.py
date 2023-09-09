@@ -257,14 +257,14 @@ def graficar_programa(nombre, titulo, color1, color2, pos, archivo):
 
     # Este IPC será nuestro valor de referencia.
     # El valor puede cambiar con el tiempo.
-    ultimo_ipc = ipc["IPC"][-1]
+    ipc_referencia = ipc["IPC"][-1]
 
     # Si queremos usar el IPC de enero usamos first()
     # Si queremos usar el IPC de diciembre usamos last()
     ipc = ipc.resample("Y").last()
 
     # CAlculamos el factor.
-    ipc["FACTOR"] = ultimo_ipc / ipc["IPC"]
+    ipc["FACTOR"] = ipc_referencia / ipc["IPC"]
 
     # Solo necesitamos el año del IPC.
     ipc.index = ipc.index.year
@@ -292,7 +292,11 @@ def graficar_programa(nombre, titulo, color1, color2, pos, archivo):
     tabla = "<b>Ejercido/Aprobado</b>"
 
     for k, v in final.iterrows():
-        tabla += f"<br>{k}: {(v['Ejercicio_Ajustado'] / v['Aprobado_Ajustado']) * 100:,.2f}%"
+        try:
+            tabla += f"<br>{k}: {(v['Ejercicio_Ajustado'] / v['Aprobado_Ajustado']) * 100:,.2f}%"
+        except:
+            # En algunos casos el monto aprobado es 0.
+            tabla += f"<br>{k}: ---"
 
     fig = go.Figure()
 
@@ -345,7 +349,6 @@ def graficar_programa(nombre, titulo, color1, color2, pos, archivo):
     maximo_ejercido = final["Ejercicio_Ajustado"].max()
 
     nuevo_maximo = maximo_aprobado if maximo_aprobado >= maximo_ejercido else maximo_ejercido
-
 
     fig.update_yaxes(
         range=[0, nuevo_maximo * 1.08],
@@ -456,20 +459,20 @@ def graficar_ramo(nombre, titulo, color1, color2, pos, archivo):
 
     # Este IPC será nuestro valor de referencia.
     # El valor puede cambiar con el tiempo.
-    ultimo_ipc = ipc["IPC"][-1]
+    ipc_referencia = ipc["IPC"][-1]
 
     # Si queremos usar el IPC de enero usamos first()
     # Si queremos usar el IPC de diciembre usamos last()
     ipc = ipc.resample("Y").last()
 
     # CAlculamos el factor.
-    ipc["FACTOR"] = ultimo_ipc / ipc["IPC"]
+    ipc["FACTOR"] = ipc_referencia / ipc["IPC"]
 
     # Solo necesitamos el año del IPC.
     ipc.index = ipc.index.year
 
-    # Cargamos el dataset de Cuenta Pública.
-    df = pd.read_csv("./data.csv")
+    # Cargamos el dataset de los totales de Cuenta Pública.
+    df = pd.read_csv("./data_total.csv")
 
     # Filtramos nuestro DataFrame con el ramo especificado.
     final = df[df["RAMO"] == nombre]
@@ -491,7 +494,11 @@ def graficar_ramo(nombre, titulo, color1, color2, pos, archivo):
     tabla = "<b>Ejercido/Aprobado</b>"
 
     for k, v in final.iterrows():
-        tabla += f"<br>{k}: {(v['Ejercicio_Ajustado'] / v['Aprobado_Ajustado']) * 100:,.2f}%"
+        try:
+            tabla += f"<br>{k}: {(v['Ejercicio_Ajustado'] / v['Aprobado_Ajustado']) * 100:,.2f}%"
+        except:
+            # En algunos casos el monto aprobado es 0.
+            tabla += f"<br>{k}: ---"
 
     fig = go.Figure()
 
