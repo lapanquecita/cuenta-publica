@@ -776,6 +776,7 @@ def comparacion_pib(archivo, tipo, titulo, nota, *elementos):
     fig.update_yaxes(
         range=[0, df["perc"].max() * 1.12],
         title="Porcentaje respecto al PIB anual",
+        ticksuffix="%",
         ticks="outside",
         separatethousands=True,
         ticklen=10,
