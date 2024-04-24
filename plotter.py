@@ -836,8 +836,8 @@ def comparacion_pib(archivo, tipo, titulo, nota, *elementos):
                 bgcolor="#111111",
                 align="left",
                 bordercolor="#FFFFFF",
-                borderwidth=2,
-                borderpad=10,
+                borderwidth=1,
+                borderpad=7,
                 text=nota,
             ),
             dict(
