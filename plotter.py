@@ -15,8 +15,8 @@ def main():
     # Cargamos el dataset que contiene la información de todoslos archivos XLS.
     df = pd.read_csv("./data.csv")
 
-    # Seleccioamos los registros del año 2019 al 2022.
-    df = df[df["CICLO"].between(2019, 2022)]
+    # Seleccioamos los registros del año 2019 al 2023.
+    df = df[df["CICLO"].between(2019, 2023)]
 
     # Seleccionamos las cifras de presupuesto ejercido.
     df = df[df["PRESUPUESTO"] == "Ejercicio"]
@@ -144,7 +144,7 @@ def main():
         font_family="Lato",
         font_color="#FFFFFF",
         font_size=18,
-        title_text="Comparación del presupuesto anual ejercido del INAI, INE y Jóvenes Construyendo el Futuro (2019-2022)",
+        title_text="Comparación del presupuesto anual ejercido del INAI, INE y Jóvenes Construyendo el Futuro (2019-2023)",
         title_x=0.5,
         title_y=0.97,
         margin_t=60,
@@ -167,7 +167,7 @@ def main():
                 borderpad=6,
                 font_size=14,
                 bgcolor="#111111",
-                text=f"<b>Nota:</b> Incluye gastos corrientes y de inversión.",
+                text="<b>Nota:</b> Incluye gastos corrientes y de inversión.",
             ),
             dict(
                 x=0.01,
@@ -176,7 +176,7 @@ def main():
                 yref="paper",
                 xanchor="left",
                 yanchor="top",
-                text="Fuente: SHCP (Cuenta Pública 2013-2022)",
+                text="Fuente: SHCP (Cuenta Pública 2013-2023)",
             ),
             dict(
                 x=0.5,
@@ -298,7 +298,7 @@ def graficar_programa(nombre, titulo, color1, color2, pos, archivo):
     for k, v in final.iterrows():
         try:
             tabla += f"<br>{k}: {(v['Ejercicio_Ajustado'] / v['Aprobado_Ajustado']) * 100:,.2f}%"
-        except:
+        except Exception as _:
             # En algunos casos el monto aprobado es 0.
             tabla += f"<br>{k}: ---"
 
@@ -428,7 +428,7 @@ def graficar_programa(nombre, titulo, color1, color2, pos, archivo):
                 yref="paper",
                 xanchor="left",
                 yanchor="top",
-                text="Fuente: SHCP (Cuenta Pública 2013-2022)",
+                text="Fuente: SHCP (Cuenta Pública 2013-2023)",
             ),
             dict(
                 x=0.5,
@@ -506,7 +506,7 @@ def graficar_ramo(nombre, titulo, color1, color2, pos, archivo):
     for k, v in final.iterrows():
         try:
             tabla += f"<br>{k}: {(v['Ejercicio_Ajustado'] / v['Aprobado_Ajustado']) * 100:,.2f}%"
-        except:
+        except Exception as _:
             # En algunos casos el monto aprobado es 0.
             tabla += f"<br>{k}: ---"
 
@@ -636,7 +636,7 @@ def graficar_ramo(nombre, titulo, color1, color2, pos, archivo):
                 yref="paper",
                 xanchor="left",
                 yanchor="top",
-                text="Fuente: SHCP (Cuenta Pública 2013-2022)",
+                text="Fuente: SHCP (Cuenta Pública 2013-2023)",
             ),
             dict(
                 x=0.5,
@@ -815,7 +815,7 @@ def comparacion_pib(archivo, tipo, titulo, nota, *elementos):
                 yref="paper",
                 xanchor="left",
                 yanchor="top",
-                text="Fuente: Hacienda (2013-2022)",
+                text="Fuente: Hacienda (2013-2023)",
             ),
             dict(
                 x=0.5,
@@ -870,8 +870,8 @@ def abreviar_cifra(x):
 
 
 if __name__ == "__main__":
-    # main()
-    # main2()
+    main()
+    main2()
 
     comparacion_pib(
         7,
