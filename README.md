@@ -93,7 +93,7 @@ El siguiente código muestra como ajustar los totales de presupuesto `Aprobado` 
 
 ```python
 # Cargamos el dataset de IPC.
-ipc = pd.read_csv("./IPC.csv", parse_dates=["Fecha"], index_col="Fecha")
+ipc = pd.read_csv("./assets/IPC.csv", parse_dates=["Fecha"], index_col="Fecha")
 
 # Determinamos el IPC base, el cual sería el más reciente disponible.
 ipc_referencia = ipc["IPC"].iloc[-1]
@@ -163,7 +163,7 @@ pib = pd.read_csv("./assets/PIB.csv", index_col=0)
 
 Con esto tendremos un `DataFrame` con los años como índice.
 
-Después cargamos el dataset de gast público y lo filtramos por el ramo o función que necesitemos.
+Después cargamos el dataset de gasto público y lo filtramos por el ramo o función que necesitemos.
 
 ```python
 # Cargamos el dataset de la Cuenta Pública generado por la Secretaría de Economía.
