@@ -1,6 +1,6 @@
 # Cuenta Pública
 
-En este repositorio se encuentran scripts para poder analizar los archivos de la Cuenta Pública de México de los años 2013-2022.
+En este repositorio se encuentran scripts para poder analizar los archivos de la Cuenta Pública de México de los años 2013-2023.
 
 La Cuenta Pública es un documento de contabilidad donde muestra los gastos totales anuales por cada ramo del gobierno.
 
