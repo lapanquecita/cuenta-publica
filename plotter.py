@@ -359,7 +359,7 @@ def graficar_programa(nombre, titulo, color1, color2, pos, archivo):
     fig.update_yaxes(
         range=[0, nuevo_maximo * 1.08],
         title="Millones de pesos a precios constantes de marzo de 2024",
-        titlefont_size=20,
+        title_font_size=20,
         ticks="outside",
         zeroline=False,
         separatethousands=True,
@@ -567,7 +567,7 @@ def graficar_ramo(nombre, titulo, color1, color2, pos, archivo):
     fig.update_yaxes(
         range=[0, nuevo_maximo * 1.08],
         title="Millones de pesos a precios constantes de marzo de 2024",
-        titlefont_size=20,
+        title_font_size=20,
         ticks="outside",
         zeroline=False,
         separatethousands=True,
